@@ -15,6 +15,7 @@ import com.devsuperior.examplemockspy.dto.ProductDTO;
 import com.devsuperior.examplemockspy.entities.Product;
 import com.devsuperior.examplemockspy.repositories.ProductRepository;
 import com.devsuperior.examplemockspy.services.exceptions.InvalidDataException;
+import com.devsuperior.examplemockspy.services.exceptions.ResourceNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
 @ExtendWith(SpringExtension.class)
@@ -137,6 +138,52 @@ public class ProductServiceTests {
 		Assertions.assertThrows(InvalidDataException.class,()->{
 			@SuppressWarnings("unused")
 			ProductDTO result = serviceSpy.update(existingId,productDTO);
+		});
+		
+	}
+	
+	
+	@Test// atualiza deve retornar uma excecao ResourceNotFoundException se o id nao existir e validações corretas
+	public void updateShouldReturnResourceNotFoundExceptionIdDoesNotExistAndValidData() {
+
+		ProductService serviceSpy = Mockito.spy(productService);
+		
+		Mockito.doNothing().when(serviceSpy).validateData(productDTO);
+		
+		Assertions.assertThrows(ResourceNotFoundException.class,()->{
+			@SuppressWarnings("unused")
+			ProductDTO result = serviceSpy.update(nonExistingId,productDTO);
+		});
+		
+	}
+	
+	
+	@Test//id nao existente e o nome do produto e nulo ou em branco
+	public void updateShouldReturnInvalidDataExceptionWhenIdDoesNotExistsAndProductNameIsBlank() {
+     productDTO.setName("");
+		
+		ProductService serviceSpy = Mockito.spy(productService);
+		Mockito.doThrow(InvalidDataException.class).when(serviceSpy).validateData(productDTO);
+		
+		Assertions.assertThrows(InvalidDataException.class,()->{
+			@SuppressWarnings("unused")
+			ProductDTO result = serviceSpy.update(nonExistingId,productDTO);
+		});
+		
+	}
+	
+	
+	
+	@Test//id nao existente e o preco do produto e negativo ou zero
+	public void updateShouldReturnInvalidDataExceptionWhenIdDoesNotExistsAndProductPriceIsNegativeOrZero() {
+     productDTO.setPrice(-5.0);
+		
+		ProductService serviceSpy = Mockito.spy(productService);
+		Mockito.doThrow(InvalidDataException.class).when(serviceSpy).validateData(productDTO);
+		
+		Assertions.assertThrows(InvalidDataException.class,()->{
+			@SuppressWarnings("unused")
+			ProductDTO result = serviceSpy.update(nonExistingId,productDTO);
 		});
 		
 	}
